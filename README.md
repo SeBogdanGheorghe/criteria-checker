@@ -1,47 +1,24 @@
-# GitHub Pages wrapper — Availability Criteria Checker
+# GitHub Pages short link — Availability Criteria Checker
 
-`index.html` embeds the Apps Script web app in a full-screen iframe, so the
-address bar always shows the short `github.io` URL instead of the long
-`script.google.com/...` one. A small "Blank page? Sign in & open directly"
-pill in the bottom-right corner covers users who aren't signed in to Google
-yet (Google refuses to show its login screen inside iframes).
+`index.html` instantly redirects to the Apps Script web app. The short link
+to share and bookmark is:
 
-## Before publishing — redeploy the Apps Script app once
+**https://sebogdangheorghe.github.io/criteria-checker/**
 
-The wrapper only works if the app allows being iframed. `Code.gs` (version
-0.93+) already includes `setXFrameOptionsMode(ALLOWALL)` in `doGet()` — copy
-the updated `Code.gs` into the Apps Script editor, then
-**Deploy → Manage deployments → ✏ Edit → Version: New version → Deploy**.
-The exec URL stays the same.
+## Why a redirect and not an embed?
 
-## Publish on GitHub Pages (~5 minutes)
-
-1. Create a **public** repository, e.g. `criteria-checker`, on github.com
-   (free accounts can only serve Pages from public repos — fine here, the
-   page contains no secrets and the tool itself still requires the
-   @secretescapes.com Google login).
-2. Upload `index.html` to the repository root (GitHub web UI: **Add file →
-   Upload files**).
-3. In the repo: **Settings → Pages → Build and deployment**:
-   - Source: **Deploy from a branch**
-   - Branch: **main**, folder **/ (root)** → **Save**
-4. Wait ~1 minute. The site appears at:
-   `https://<your-username-or-org>.github.io/criteria-checker/`
-5. Share that link. Done — the long URL never appears in the address bar.
+An iframe embed was tried first and cannot work: browsers treat the Google
+session cookie as a third-party cookie on a non-Google domain and refuse to
+send it, so the frame always bounces to a Google login page — which itself
+refuses to render inside frames ("www.google.com refused to connect").
+That is browser privacy policy and applies to all login-protected Google
+apps embedded on external sites. After the redirect the address bar shows
+the long `script.google.com` URL; the only way to hide it completely is an
+embed on Google Sites (same Google domain, so cookies stay first-party).
 
 ## If the exec URL ever changes
 
-A new Apps Script *deployment* (as opposed to a new *version* of the existing
-one) gets a new exec URL. If that happens, update the two `script.google.com`
-URLs in `index.html` (the iframe `src` and the fallback link) and push —
-the github.io link everyone uses stays the same.
-
-## Notes
-
-- Users already signed in to their work Google account load the tool
-  seamlessly. In a fresh browser/incognito, the frame stays blank — the
-  fallback pill opens the tool directly in a new tab, which triggers the
-  normal Google sign-in; after that, the wrapper works too.
-- `ALLOWALL` means any site could technically iframe the app. The data is
-  still protected — every request inside the frame is authenticated against
-  @secretescapes.com accounts.
+A new Apps Script *deployment* (as opposed to a new *version* of the
+existing one) gets a new exec URL. Update the three `script.google.com`
+URLs in `index.html` (meta refresh, fallback link, script redirect), then
+commit and push — the github.io link everyone uses stays the same.
